@@ -11,6 +11,5 @@ def packet_callback(packet):
         print(f"Source IP: {ip_src}, Source Port: {sport}")
         print(f"Destination IP: {ip_dst}, Destination Port: {dport}")
         print("="*30)
-
-# Sniff network traffic
 sniff(prn=packet_callback, store=0, count=10)
+#too easy, too stiff, can't get it to give us the right things scrapping it
