@@ -49,18 +49,18 @@ def main():
     finally:
         # promiscuous mode bye bye
 
-#        if 'conn' in locals():
-#            conn.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
-#            conn.close()
         if 'conn' in locals():
-            try:
-                conn.ioctl(socket.SIO_RCVALL, 0)
-            except OSError as e:
-                if e.winerror == 10022:  # [WinError 10022] An invalid argument was supplied WHAT DOES THIS EVEN MEAN WINDOWS
-                    pass  # ignore this specific error 🫵😹
-                else:
-                    print(f"Error disabling promiscuous mode: {e}")
+            conn.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
             conn.close()
+#        if 'conn' in locals():
+#            try:
+#                conn.ioctl(socket.SIO_RCVALL, 0)
+#            except OSError as e:
+#                if e.winerror == 10022:  # [WinError 10022] An invalid argument was supplied WHAT DOES THIS EVEN MEAN?!??!!! WINDOWS?HELLOW!
+#                    pass  # ignore this specific error 🫵😹
+#                else:
+#                    print(f"Error disabling promiscuous mode: {e}")
+#            conn.close()
 def ethernet_frame(data):
     dest_mac, src_mac, eth_proto = struct.unpack('! 6s 6s H', data[:14])
     return get_mac_addr(dest_mac), get_mac_addr(src_mac), socket.htons(eth_proto), data[14:]
@@ -85,14 +85,22 @@ def get_protocol(proto):
     }
     return protocol_map.get(proto, str(proto))
 
+
 def get_source_port(data):
-    if True:  # TCP
-        return struct.unpack('! H', data[:2])[0]
+    try:
+        if True:
+            return struct.unpack('! H', data[:2])[0]
+    except (IndexError, AttributeError, struct.error):
+        return None
 
 
 def get_destination_port(data):
-    if True:  # TCP
-        return struct.unpack('! H', data[2:4])[0]
+    try:
+        if True:
+            return struct.unpack('! H', data[2:4])[0]
+    except (IndexError, AttributeError, struct.error):
+        return None
+
 
 logo = r'''
                                 @@@@@@                                     @%@@@@@@
