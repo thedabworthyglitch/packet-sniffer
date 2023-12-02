@@ -14,15 +14,17 @@ Our Python Packet Sniffer is a superior tool in the realm of network analysis. I
 
 ## How to Use
 
-- `sniffernewtry.py`: This is the main script that runs the packet sniffer. It binds to a specific network interface (whose IP you can provide in the variable interface IP) and listens for incoming packets, printing detailed information about each one.
+- `sniffer.py`: This is the main script that runs the packet sniffer. It binds to a specific network interface (whose IP you can provide in the variable interface IP) and listens for incoming packets, printing detailed information about each one.
 
-Although you can also use the file `ethdata.py` to get a nice look at what's floating between the fiber cables that help you reach your favorite server.
+-To find the IP for your interface, just use `ipconfig` on windows, `ifconfig` on unix like operating systems and take note of the IPV4 address of the network interface of your choice that you'd like to listen on.
+
+-Although you can also use the file `ethdata.py` to get a nice look at what's floating between the fiber cables that help you reach your favorite server.
 
 
 
 1. Clone the repository: `git clone https://github.com/thedabworthyglitch/packet-sniffer.git`
 2. Navigate to the project directory: `cd packet-sniffer`
-3. Run the script: `python3 sniffernewtry.py`
+3. Run the script: `python3 sniffer.py`
 
 ## Contributing
 
