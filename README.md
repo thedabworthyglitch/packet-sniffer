@@ -22,9 +22,10 @@ My Python based Packet Sniffer is a superior tool in the realm of network analys
 
 -`imtoolazytoformatallprotocols.py` is a script that fethches all the current IANA protocol numbers and their names and formats them in a format that you can simply copy and paste into the protocol_map dictionary to update it, making the good sniffer a timeless masterpiece.
 
+0. USE AN ELEVATED SHELL
 1. Clone the repository: `git clone https://github.com/thedabworthyglitch/packet-sniffer.git`
 2. Navigate to the project directory: `cd packet-sniffer`
-3. Run the script: `python3 sniffer.py`
+3. Run the script: `python \.goodsniffer.py`
 
 ## Contributing
 
