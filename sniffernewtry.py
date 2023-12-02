@@ -3,10 +3,13 @@ import struct
 import textwrap
 import time
 
+interfaceip = '192.168.1.8'
+#interfaceip = str(input('Enter the IP to your interface'))
+
 def main():
     try:
         conn = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_IP)
-        conn.bind(('192.168.1.8', 0))
+        conn.bind((interfaceip, 0))
         conn.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
         conn.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)
 
