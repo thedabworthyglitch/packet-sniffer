@@ -6,67 +6,8 @@ import os
 import argparse
 import csv
 
-#interfaceip = str(input('Enter the IP to your interface: '))
+interfaceip = '192.168.1.8'
 
-def main():
-
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print("WELCOME TO THE", end="")
-    time.sleep(1)
-    print(logo)
-    try:
-        capture_eth_data = input("Do you want to capture Raw Ethernet Data (Hexdump) (y for yes, press enter to ignore)? ").lower() == 'y'
-        conn = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_IP)
-        conn.bind((interfaceip, 0))
-        conn.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
-        conn.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)
-
-        serial_number = 0
-        time.sleep(2)
-        while True:
-            raw_data, addr = conn.recvfrom(65536)
-            dest_mac, src_mac, eth_proto, data = ethernet_frame(raw_data)
-            version, header_length, ttl, proto, src, target, data = ipv4_packet(data)
-            timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-
-            serial_number += 1
-
-            print('\nPacket Information:')
-            print(f'Serial Number: {serial_number}')
-            print(f'Timestamp: {timestamp}')
-            print(f'Protocol number: {(proto)}')
-            print(f'Protocol name: {get_protocol(proto)}')
-            print(f'Packet Length: {len(raw_data)} bytes')
-            print(f'Destination MAC: {dest_mac}')
-            print(f'Source MAC: {src_mac}')
-            print(f'Destination Host: {target}')
-            print(f'Source Host: {src}')
-            print(f'Destination Port: {get_destination_port(data)}')
-            print(f'Source Port: {get_source_port(data)}')
-
-            if capture_eth_data:
-                print(f'Raw Ethernet Data: {data.hex()}')
-
-
-    except PermissionError as e:
-        print(f"PermissionError: {e}. Run with admin bruh.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    finally:
-        # promiscuous mode bye bye
-
-        if 'conn' in locals():
-            conn.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
-            conn.close()
-#        if 'conn' in locals():
-#            try:
-#                conn.ioctl(socket.SIO_RCVALL, 0)
-#            except OSError as e:
-#                if e.winerror == 10022:  # [WinError 10022] An invalid argument was supplied WHAT DOES THIS EVEN MEAN?!??!!! WINDOWS?HELLOW!
-#                    pass  # ignore this specific error 🫵😹
-#                else:
-#                    print(f"Error disabling promiscuous mode: {e}")
-#            conn.close()
 def ethernet_frame(data):
     dest_mac, src_mac, eth_proto = struct.unpack('! 6s 6s H', data[:14])
     return get_mac_addr(dest_mac), get_mac_addr(src_mac), socket.htons(eth_proto), data[14:]
@@ -91,14 +32,12 @@ def get_protocol(proto):
     }
     return protocol_map.get(proto, str(proto))
 
-
 def get_source_port(data):
     try:
         if True:
             return struct.unpack('! H', data[:2])[0]
     except (IndexError, AttributeError, struct.error):
         return None
-
 
 def get_destination_port(data):
     try:
@@ -107,13 +46,21 @@ def get_destination_port(data):
     except (IndexError, AttributeError, struct.error):
         return None
 
+def write_to_file(output_file, packet_data):
+    with open(output_file, 'a') as f:
+        f.write(packet_data)
+
+def write_to_csv(output_file, packet_data):
+    with open(output_file, 'a', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(packet_data)
 
 logo = r'''
                                 @@@@@@                                     @@@@@@@@
                             @@@@@@@@@@@         @                  @     @@@@@@@@@@@@@@
-                       @@@@@@@@@@@@@@@@        @@@                @@@     @@@@@@@@@@@@@@@@@
-                    @@@@@@@@@@@@@@@@@@       @@@@@@             @@@@@@     @@@@@@   @@@@@@@@
-                  @@@@@@@@@@@ @@@@@@@       @@@@@@@@@@        @@@@@@@@@@   @@@@@@@    @@@@@@@
+                       @@@@@@@@@@@@@@@@        @@@                @@@     @@@@@@@@@@@@@@@
+                    @@@@@@@@@@@@@@@@@@       @@@@@@             @@@@@@     @@@@@@   @@@@@@@
+                  @@@@@@@@@@@ @@@@@@@       @@@@@@@@@@        @@@@@@@@@@   @@@@@@@    @@@@@@
                 @@@@@@@@@@   @@@@@@@%     @@@@@@@@@@@@@     @@@@@@@@@@@@   @@@@@@      @@@@@@@
               @@@@@@@@@     @@@@@@@      @@@@@@@@@@@@@@    @@@@@@@@@@@@@   @@@@@@       @@@@@@@
             @@@@@@@@@        @@@@@      @@@@@@@@ @@@@@@   @@@@@@@ @@@@@@@  @@@@@@        @@@@@@@
@@ -139,6 +86,46 @@ logo = r'''
      @@@@@@@@@@@@@@@@ @@@@    @@@@ @@@@@@@@@@@@@@@ @@@     @@@@       @@@@@@@@@  @@@@    @@@@
     @@@@@@@@@@@@@@%   @@@@          @@@@@@@@@@@@                       @@@@@@@@  @@@@     @@@@
                                                                                  @@@@     @@@@@'''
+
+
+def main():
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("WELCOME TO THE", end="")
+    time.sleep(1)
+    print(logo)
+
+    parser = argparse.ArgumentParser(description='A simple packet sniffer')
+    parser.add_argument('-o', '--output', type=str, help='output file')
+    args = parser.parse_args()
+
+    capture_eth_data = input("Do you want to capture Raw Ethernet Data (Hexdump) (y for yes, press enter to ignore)? ").lower() == 'y'
+    conn = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_IP)
+    conn.bind((interfaceip, 0))
+    conn.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+    conn.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)
+
+    serial_number = 0
+    time.sleep(2)
+
+    while True:
+        raw_data, addr = conn.recvfrom(65536)
+        dest_mac, src_mac, eth_proto, data = ethernet_frame(raw_data)
+        version, header_length, ttl, proto, src, target, data = ipv4_packet(data)   
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+
+        serial_number += 1
+
+        packet_data = f'===================================\n\nSerial Number: {serial_number}\nTimestamp: {timestamp}\nProtocol number: {(proto)}\nProtocol name: {get_protocol(proto)}\nPacket Length: {len(raw_data)} bytes\nDestination MAC: {dest_mac}\nSource MAC: {src_mac}\nDestination Host: {target}\nSource Host: {src}\nDestination Port: {get_destination_port(data)}\nSource Port: {get_source_port(data)}\n'
+
+        if capture_eth_data:
+            packet_data += f'Hex Ethernet Data: {data.hex()}\n'
+            packet_data += f'Raw Ethernet Data: {data}\n'
+
+        print(packet_data)
+
+        if args.output:
+            write_to_file(args.output + '.txt', packet_data)
+            write_to_csv(args.output + '.csv', [serial_number, timestamp, proto, get_protocol(proto), len(raw_data), dest_mac, src_mac, target, src, get_destination_port(data), get_source_port(data), data.hex() if capture_eth_data else None])
 
 if __name__ == "__main__":
     main()
