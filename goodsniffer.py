@@ -121,7 +121,7 @@ def main():
 
             if args.output:
                 write_to_file(args.output + '.txt', packet_data)
-                write_to_csv(args.output + '.csv', [serial_number, timestamp, proto, get_protocol(proto), len(raw_data), dest_mac, src_mac, target, src, get_destination_port(data), get_source_port(data), data.hex() if capture_eth_data else None])
+                write_to_csv(args.output + '.csv', [serial_number, timestamp, proto, get_protocol(proto), len(raw_data), dest_mac, src_mac, target, src, get_destination_port(data), get_source_port(data), data.hex() if capture_eth_data else None, data if capture_raweth_data else None])
 
     except KeyboardInterrupt:
         t2=time.time()#timestamp2
